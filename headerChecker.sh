@@ -71,13 +71,15 @@ while [ ${#QUEUE[@]} -gt 0 ]; do
   PROCESSED_URLS=$((PROCESSED_URLS + 1))
   VISITED["$CURRENT_URL"]=1
 
-  LINKS=$(curl -s "$CURRENT_URL" | \
-    grep -Eo 'href="([^"#]+)"' | \
+  LINKS=$(curl -s --max-time 10 "$CURRENT_URL" | \
+    grep -Eo '(href|src)="([^"#]+)"' | \
     cut -d'"' -f2 | \
-    grep -E "^/|^https://$DOMAIN" | \
+    grep -E "^/|^https?://$DOMAIN|^//$DOMAIN" | \
+    sed -E "s|^//|https://|" | \
     sed "s|^/|https://$DOMAIN/|" | \
-    sed "s|//$|/|" | \
-    sort -u)
+    sed "s|/$||" | \
+    grep -v '\.(png|jpg|jpeg|gif|css|js|ico|svg)$' | \
+    sort -u) || continue
 
   for LINK in $LINKS; do
     if [[ ! ${VISITED["$LINK"]} ]] && [[ ! " ${QUEUE[@]} " =~ " ${LINK} " ]]; then
@@ -89,7 +91,7 @@ while [ ${#QUEUE[@]} -gt 0 ]; do
   progress_bar "$PROCESSED_URLS" "$TOTAL_DISCOVERED"
 
   echo -e "\nURL: $CURRENT_URL" >> "$OUTPUT"
-  RESPONSE=$(curl -s -L -D - -o /dev/null "$CURRENT_URL")
+  RESPONSE=$(curl -s -L --max-time 10 -D - -o /dev/null "$CURRENT_URL") || continue
   for HEADER in "${HEADERS[@]}"; do
     if echo "$RESPONSE" | grep -qi "^$HEADER:"; then
       echo "$HEADER: PRESENT" >> "$OUTPUT"
@@ -98,20 +100,6 @@ while [ ${#QUEUE[@]} -gt 0 ]; do
     fi
   done
 done
-
-  LINKS=$(curl -s "$CURRENT_URL" | \
-    grep -Eo 'href="([^"#]+)"' | \
-    cut -d'"' -f2 | \
-    grep -E "^/|^https://$DOMAIN" | \
-    sed "s|^/|https://$DOMAIN/|" | \
-    sed "s|//$|/|" | \
-    sort -u)
-
-for LINK in $LINKS; do
-    if [[ ! ${VISITED["$LINK"]} ]]; then
-      QUEUE+=("$LINK")
-    fi
-  done
 
 echo " Results saved to $OUTPUT"
 echo -e "\nScan complete. Total URLs processed: $PROCESSED_URLS"
