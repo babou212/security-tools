@@ -24,7 +24,7 @@ HEADERS=(
   "Cross-Origin-Embedder-Policy"
 )
 
-echo "Full crawling and checking security headers for domain: $DOMAIN" > "$OUTPUT"
+echo "Security headers for domain: $DOMAIN" > "$OUTPUT"
 echo "--------------------------------------------------------------" >> "$OUTPUT"
 
 declare -A VISITED
