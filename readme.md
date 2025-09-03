@@ -35,7 +35,7 @@ A Bash script to crawl a website and check for the presence of key security head
 
 ## Requirements
 
-- Bash
+- `Bash`
 - `curl`
 - `grep`
 - `cut`
