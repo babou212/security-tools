@@ -1,0 +1,16 @@
+# Ignore output reports
+security_headers_report.txt
+*.txt
+
+# Ignore temporary files
+*.log
+*.tmp
+*~
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore editor swap/backup files
+*.swp
+*.swo
